@@ -1,0 +1,3 @@
+[submodule "libs/zigex"]
+	path = libs/zigex
+	url = https://github.com/francisrstokes/zigex
