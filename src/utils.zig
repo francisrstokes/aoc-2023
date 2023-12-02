@@ -51,3 +51,46 @@ pub fn read_day_input(allocator: std.mem.Allocator, day: u32) !FileLines {
 
     return try read_file_lines(allocator, real_path);
 }
+
+pub fn split_arraylist(allocator: std.mem.Allocator, s: []const u8, sep: []const u8) !std.ArrayList([]const u8) {
+    var result = std.ArrayList([]const u8).init(allocator);
+    var it = std.mem.split(u8, s, sep);
+    while (it.next()) |item| {
+        try result.append(item);
+    }
+    return result;
+}
+
+pub const NumResult = struct {
+    const Self = @This();
+    const ReadNumError = error{UnexpectedChar};
+
+    value: usize,
+    consumed: usize,
+
+    pub fn read_num_from_string(str: []const u8) !Self {
+        var start: usize = 0;
+        var end: usize = 0;
+        var start_found = false;
+
+        for (str, 0..) |c, i| {
+            if (!start_found) {
+                if (c == ' ') continue;
+                if (c >= '0' and c <= '9') {
+                    start = i;
+                    end = i;
+                    start_found = true;
+                    continue;
+                }
+                return ReadNumError.UnexpectedChar;
+            } else {
+                if (c >= '0' and c <= '9') continue;
+                end = i;
+                break;
+            }
+        }
+
+        const value = try std.fmt.parseInt(usize, str[start..end], 10);
+        return .{ .value = value, .consumed = end - start };
+    }
+};
