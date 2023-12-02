@@ -1,5 +1,5 @@
 const std = @import("std");
-const day1 = @import("./day1/day1.zig");
+const day1 = @import("./days/1.zig");
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -9,4 +9,5 @@ pub fn main() !void {
     }
 
     try day1.run1(allocator);
+    try day1.run2(allocator);
 }
