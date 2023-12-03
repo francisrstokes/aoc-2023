@@ -14,20 +14,11 @@ const GameInfo = struct {
         Unknown,
 
         pub fn from_str(str: []const u8) Colors {
-            var start: usize = 0;
-            for (str) |c| {
-                if (c == ' ') {
-                    start += 1;
-                    continue;
-                }
-                break;
-            }
-
-            if (std.mem.eql(u8, str[start..], "red")) {
+            if (std.mem.eql(u8, str, "red")) {
                 return Colors.Red;
-            } else if (std.mem.eql(u8, str[start..], "green")) {
+            } else if (std.mem.eql(u8, str, "green")) {
                 return Colors.Green;
-            } else if (std.mem.eql(u8, str[start..], "blue")) {
+            } else if (std.mem.eql(u8, str, "blue")) {
                 return Colors.Blue;
             }
 
@@ -53,12 +44,17 @@ const GameInfo = struct {
 
             var it = std.mem.splitAny(u8, sample, ",");
             while (it.next()) |color_count| {
-                const res = try utils.NumResult.read_num_from_string(color_count);
+                var parser = std.fmt.Parser{ .buf = color_count, .pos = 0 };
 
-                switch (Colors.from_str(color_count[res.consumed + 1 ..])) {
-                    .Red => info.reds += res.value,
-                    .Blue => info.blues += res.value,
-                    .Green => info.greens += res.value,
+                _ = parser.maybe(' ');
+                const res = parser.number().?;
+                _ = parser.char(); // Consume whitespace
+                const color = parser.until('.'); // Don't expect to find a '.', but just read the rest of the string
+
+                switch (Colors.from_str(color)) {
+                    .Red => info.reds += res,
+                    .Blue => info.blues += res,
+                    .Green => info.greens += res,
                     else => unreachable,
                 }
             }

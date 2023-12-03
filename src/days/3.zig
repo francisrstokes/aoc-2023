@@ -66,36 +66,26 @@ pub fn run1(child_allocator: std.mem.Allocator) !void {
     var part_total: usize = 0;
 
     for (grid, 0..) |line, y| {
-        var x_off: i64 = 0;
+        var parser = std.fmt.Parser{ .buf = line, .pos = 0 };
 
-        while (x_off < line.len) {
-            const ux_off = @as(usize, @bitCast(x_off));
-            const value = line[ux_off];
-            if (utils.is_ascii_digit(value)) {
-                var end = ux_off + 1;
-                var len: usize = 1;
-
-                while (true) {
-                    if (end >= line.len) break;
-                    if (!utils.is_ascii_digit(line[end])) break;
-                    end += 1;
-                    len += 1;
-                }
+        while (parser.pos < line.len) {
+            if (std.ascii.isDigit(parser.peek(0).?)) {
+                const old_x = parser.pos;
+                const value = parser.number().?;
 
                 const n = SchematicNumber{
-                    .length = len,
-                    .pos = .{ .x = x_off, .y = @as(i64, @bitCast(y)) },
-                    .value = try std.fmt.parseInt(usize, line[ux_off..end], 10),
+                    .length = parser.pos - old_x,
+                    .pos = .{ .x = @as(i64, @bitCast(old_x)), .y = @as(i64, @bitCast(y)) },
+                    .value = value,
                 };
 
                 if (is_part_number(grid, n)) {
                     part_total += n.value;
                 }
 
-                x_off = @as(i64, @bitCast(end));
                 continue;
             }
-            x_off += 1;
+            _ = parser.char();
         }
     }
 
@@ -114,26 +104,17 @@ pub fn run2(child_allocator: std.mem.Allocator) !void {
     var gears_total: usize = 0;
 
     for (grid, 0..) |line, y| {
-        var x_off: i64 = 0;
+        var parser = std.fmt.Parser{ .buf = line, .pos = 0 };
 
-        while (x_off < line.len) {
-            const ux_off = @as(usize, @bitCast(x_off));
-            const value = line[ux_off];
-            if (utils.is_ascii_digit(value)) {
-                var end = ux_off + 1;
-                var len: usize = 1;
-
-                while (true) {
-                    if (end >= line.len) break;
-                    if (!utils.is_ascii_digit(line[end])) break;
-                    end += 1;
-                    len += 1;
-                }
+        while (parser.pos < line.len) {
+            if (std.ascii.isDigit(parser.peek(0).?)) {
+                const old_x = parser.pos;
+                const value = parser.number().?;
 
                 const n = SchematicNumber{
-                    .length = len,
-                    .pos = .{ .x = x_off, .y = @as(i64, @bitCast(y)) },
-                    .value = try std.fmt.parseInt(usize, line[ux_off..end], 10),
+                    .length = parser.pos - old_x,
+                    .pos = .{ .x = @as(i64, @bitCast(old_x)), .y = @as(i64, @bitCast(y)) },
+                    .value = value,
                 };
 
                 if (find_gear_position(grid, n)) |gear_pos| {
@@ -145,10 +126,9 @@ pub fn run2(child_allocator: std.mem.Allocator) !void {
                     }
                 }
 
-                x_off = @as(i64, @bitCast(end));
                 continue;
             }
-            x_off += 1;
+            _ = parser.char();
         }
     }
 
