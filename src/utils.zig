@@ -61,6 +61,10 @@ pub fn split_arraylist(allocator: std.mem.Allocator, s: []const u8, sep: []const
     return result;
 }
 
+pub inline fn is_ascii_digit(v: u8) bool {
+    return v >= '0' and v <= '9';
+}
+
 pub const NumResult = struct {
     const Self = @This();
     const ReadNumError = error{UnexpectedChar};
