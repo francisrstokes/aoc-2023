@@ -60,3 +60,11 @@ pub fn split_arraylist(allocator: std.mem.Allocator, s: []const u8, sep: []const
     }
     return result;
 }
+
+pub inline fn to_i64(x: usize) i64 {
+    return @as(i64, @bitCast(x));
+}
+
+pub inline fn to_usize(x: i64) usize {
+    return @as(usize, @bitCast(x));
+}

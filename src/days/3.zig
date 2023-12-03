@@ -11,11 +11,11 @@ const SchematicNumber = struct {
 
 fn get_value_at_position(grid: Grid, p: Vec2D) ?u8 {
     if (p.y >= grid.len or p.y < 0) return null;
-    const uy = @as(usize, @bitCast(p.y));
+    const uy = utils.to_usize(p.y);
     const line = grid[uy];
 
     if (p.x >= line.len or p.x < 0) return null;
-    const ux = @as(usize, @bitCast(p.x));
+    const ux = utils.to_usize(p.x);
 
     const value = line[ux];
     return value;
@@ -23,9 +23,9 @@ fn get_value_at_position(grid: Grid, p: Vec2D) ?u8 {
 
 fn is_part_number(grid: Grid, n: SchematicNumber) bool {
     for (0..3) |y_off| {
-        const y: i64 = -1 + @as(i64, @bitCast(y_off));
+        const y: i64 = -1 + utils.to_i64(y_off);
         for (0..n.length + 2) |x_off| {
-            const x: i64 = -1 + @as(i64, @bitCast(x_off));
+            const x: i64 = -1 + utils.to_i64(x_off);
             const p = Vec2D{ .x = n.pos.x + x, .y = n.pos.y + y };
             if (get_value_at_position(grid, p)) |value| {
                 switch (value) {
@@ -40,9 +40,9 @@ fn is_part_number(grid: Grid, n: SchematicNumber) bool {
 
 fn find_gear_position(grid: Grid, n: SchematicNumber) ?Vec2D {
     for (0..3) |y_off| {
-        const y: i64 = -1 + @as(i64, @bitCast(y_off));
+        const y: i64 = -1 + utils.to_i64(y_off);
         for (0..n.length + 2) |x_off| {
-            const x: i64 = -1 + @as(i64, @bitCast(x_off));
+            const x: i64 = -1 + utils.to_i64(x_off);
             const p = Vec2D{ .x = n.pos.x + x, .y = n.pos.y + y };
             if (get_value_at_position(grid, p)) |value| {
                 switch (value) {
@@ -75,7 +75,7 @@ pub fn run1(child_allocator: std.mem.Allocator) !void {
 
                 const n = SchematicNumber{
                     .length = parser.pos - old_x,
-                    .pos = .{ .x = @as(i64, @bitCast(old_x)), .y = @as(i64, @bitCast(y)) },
+                    .pos = .{ .x = utils.to_i64(old_x), .y = utils.to_i64(y) },
                     .value = value,
                 };
 
@@ -113,7 +113,7 @@ pub fn run2(child_allocator: std.mem.Allocator) !void {
 
                 const n = SchematicNumber{
                     .length = parser.pos - old_x,
-                    .pos = .{ .x = @as(i64, @bitCast(old_x)), .y = @as(i64, @bitCast(y)) },
+                    .pos = .{ .x = utils.to_i64(old_x), .y = utils.to_i64(y) },
                     .value = value,
                 };
 
