@@ -38,6 +38,23 @@ fn is_part_number(grid: Grid, n: SchematicNumber) bool {
     return false;
 }
 
+fn find_gear_position(grid: Grid, n: SchematicNumber) ?Vec2D {
+    for (0..3) |y_off| {
+        const y: i64 = -1 + @as(i64, @bitCast(y_off));
+        for (0..n.length + 2) |x_off| {
+            const x: i64 = -1 + @as(i64, @bitCast(x_off));
+            const p = Vec2D{ .x = n.pos.x + x, .y = n.pos.y + y };
+            if (get_value_at_position(grid, p)) |value| {
+                switch (value) {
+                    '*' => return p,
+                    else => continue,
+                }
+            }
+        }
+    }
+    return null;
+}
+
 pub fn run1(child_allocator: std.mem.Allocator) !void {
     var arena = std.heap.ArenaAllocator.init(child_allocator);
     var allocator = arena.allocator();
@@ -51,7 +68,7 @@ pub fn run1(child_allocator: std.mem.Allocator) !void {
     for (grid, 0..) |line, y| {
         var x_off: i64 = 0;
 
-        inner: while (x_off < line.len) {
+        while (x_off < line.len) {
             const ux_off = @as(usize, @bitCast(x_off));
             const value = line[ux_off];
             if (utils.is_ascii_digit(value)) {
@@ -70,14 +87,13 @@ pub fn run1(child_allocator: std.mem.Allocator) !void {
                     .pos = .{ .x = x_off, .y = @as(i64, @bitCast(y)) },
                     .value = try std.fmt.parseInt(usize, line[ux_off..end], 10),
                 };
-                const is_part = is_part_number(grid, n);
 
-                if (is_part) {
+                if (is_part_number(grid, n)) {
                     part_total += n.value;
                 }
 
                 x_off = @as(i64, @bitCast(end));
-                continue :inner;
+                continue;
             }
             x_off += 1;
         }
@@ -92,5 +108,49 @@ pub fn run2(child_allocator: std.mem.Allocator) !void {
     defer arena.deinit();
 
     var input_file = try utils.read_day_input(allocator, 3);
-    _ = input_file;
+    const grid = input_file.lines();
+
+    var gears = std.AutoHashMap(Vec2D, usize).init(allocator);
+    var gears_total: usize = 0;
+
+    for (grid, 0..) |line, y| {
+        var x_off: i64 = 0;
+
+        while (x_off < line.len) {
+            const ux_off = @as(usize, @bitCast(x_off));
+            const value = line[ux_off];
+            if (utils.is_ascii_digit(value)) {
+                var end = ux_off + 1;
+                var len: usize = 1;
+
+                while (true) {
+                    if (end >= line.len) break;
+                    if (!utils.is_ascii_digit(line[end])) break;
+                    end += 1;
+                    len += 1;
+                }
+
+                const n = SchematicNumber{
+                    .length = len,
+                    .pos = .{ .x = x_off, .y = @as(i64, @bitCast(y)) },
+                    .value = try std.fmt.parseInt(usize, line[ux_off..end], 10),
+                };
+
+                if (find_gear_position(grid, n)) |gear_pos| {
+                    var maybe_first_value = gears.get(gear_pos);
+                    if (maybe_first_value) |first_value| {
+                        gears_total += first_value * n.value;
+                    } else {
+                        try gears.put(gear_pos, n.value);
+                    }
+                }
+
+                x_off = @as(i64, @bitCast(end));
+                continue;
+            }
+            x_off += 1;
+        }
+    }
+
+    std.debug.print("{d}\n", .{gears_total});
 }
