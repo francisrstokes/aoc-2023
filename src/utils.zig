@@ -68,3 +68,17 @@ pub inline fn to_i64(x: usize) i64 {
 pub inline fn to_usize(x: i64) usize {
     return @as(usize, @bitCast(x));
 }
+
+pub fn consume_whitespace(parser: *std.fmt.Parser) void {
+    while (true) {
+        if (parser.peek(0)) |c| {
+            if (c == ' ') {
+                _ = parser.char();
+            } else {
+                return;
+            }
+        } else {
+            return;
+        }
+    }
+}
